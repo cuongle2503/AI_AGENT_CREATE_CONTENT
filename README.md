@@ -4,8 +4,10 @@
 
 ## Tính năng
 
-- Tải lên hình ảnh sản phẩm và nhận mô tả được tạo bởi AI
-- Sử dụng GPT-4o của OpenAI để phân tích hình ảnh và tạo mô tả ban đầu
+- Tải lên một hoặc nhiều hình ảnh sản phẩm và nhận mô tả được tạo bởi AI
+- Xử lý mỗi hình ảnh riêng biệt để tạo nội dung chi tiết cho từng sản phẩm
+- Chế độ tải lên đơn hoặc chế độ tải lên nhiều hình ảnh với giao diện dễ sử dụng
+- Lựa chọn giữa các mô hình OpenAI (GPT-4o, GPT-4.1, GPT-4.1 Mini) để phân tích hình ảnh
 - Tăng cường mô tả với mô hình LLaMA 3.2 của Ollama
 - Giao diện người dùng hiện đại, đáp ứng
 
@@ -67,7 +69,8 @@
 │   │   └── prompts/      # Thư mục chứa các prompt mẫu
 │   │       ├── __init__.py
 │   │       ├── openai_prompts.py   # Prompt cho OpenAI
-│   │       └── ollama_prompts.py   # Prompt cho Ollama
+│   │       ├── ollama_prompts.py   # Prompt cho Ollama
+│   │       └── model_config.py     # Cấu hình các mô hình AI
 │   ├── static/           # Tài sản tĩnh
 │   │   ├── css/          # Tệp CSS
 │   │   ├── js/           # Tệp JavaScript
@@ -87,10 +90,26 @@
 
 ## Sử dụng
 
-1. Tải lên hình ảnh sản phẩm của bạn
-2. Nhập yêu cầu mô tả (chi tiết tùy chọn về sản phẩm)
-3. Nhấp vào "Tạo mô tả"
-4. Xem mô tả sản phẩm được tạo bởi AI
+1. Chọn chế độ tải lên (đơn hoặc nhiều hình ảnh) bằng nút chuyển đổi
+2. Tải lên một hoặc nhiều hình ảnh sản phẩm của bạn
+3. Nhập yêu cầu mô tả (chi tiết tùy chọn về sản phẩm)
+4. Chọn mô hình OpenAI phù hợp với nhu cầu của bạn
+   - GPT-4o: Mô hình đa phương thức tốt nhất cho phân tích hình ảnh
+   - GPT-4.1: Mô hình nâng cao với khả năng suy luận mạnh mẽ
+   - GPT-4.1 Mini: Phiên bản nhẹ hơn, nhanh hơn của GPT-4.1
+5. Nhấp vào "Tạo mô tả"
+6. Xem mô tả sản phẩm được tạo bởi AI
+
+### Chế độ nhiều hình ảnh
+
+Khi chọn chế độ nhiều hình ảnh, bạn có thể:
+- Tải lên nhiều hình ảnh cùng lúc
+- Mỗi hình ảnh sẽ được phân tích riêng biệt
+- Nhận mô tả sản phẩm riêng cho từng hình ảnh
+- Dễ dàng chuyển đổi giữa các mô tả bằng giao diện accordion
+- Tải xuống hoặc sao chép từng mô tả riêng lẻ
+
+Chức năng này đặc biệt hữu ích khi bạn cần tạo nội dung cho nhiều sản phẩm khác nhau cùng một lúc, giúp tiết kiệm thời gian và công sức.
 
 ## Quy tắc mã hóa
 

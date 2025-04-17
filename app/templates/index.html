@@ -7,28 +7,134 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .btn-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border-radius: 2rem;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid #ced4da;
+            padding: 0.25rem;
+            margin-bottom: 1rem;
+        }
+        .btn-toggle-button {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            display: inline-block;
+            width: 48%;
+            height: calc(100% - 4px);
+            border-radius: 1.875rem;
+            background-color: #fff;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: transform 0.3s ease;
+        }
+        .btn-toggle.active .btn-toggle-button {
+            transform: translateX(100%);
+        }
+        .btn-toggle-labels {
+            display: flex;
+            width: 100%;
+        }
+        .btn-toggle-labels span {
+            flex: 1;
+            text-align: center;
+            padding: 0.25rem 0.75rem;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+        .btn-toggle:not(.active) .btn-toggle-labels span:first-child,
+        .btn-toggle.active .btn-toggle-labels span:last-child {
+            color: #212529;
+            font-weight: 500;
+        }
+        .btn-toggle:not(.active) .btn-toggle-labels span:last-child,
+        .btn-toggle.active .btn-toggle-labels span:first-child {
+            color: #6c757d;
+        }
+        #image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .image-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview .remove-image {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h1 class="mb-4 text-center">Custom Product Description Generator</h1>
         <p class="text-center mb-4">Upload an image to generate a detailed product description in markdown format.</p>
 
-        <div class="text-center mb-4">
-            <a href="/markdown" class="btn btn-outline-secondary btn-sm">View Documentation</a>
-        </div>
-
         <div class="row">
             <div class="col-md-6 offset-md-3">
                 <div class="card">
                     <div class="card-body">
                         <form id="upload-form" enctype="multipart/form-data">
-                            <div class="mb-3">
+                            <div class="d-flex justify-content-center mb-3">
+                                <div id="upload-mode-toggle" class="btn-toggle" style="width: 260px;">
+                                    <div class="btn-toggle-button"></div>
+                                    <div class="btn-toggle-labels">
+                                        <span>Single Image</span>
+                                        <span>Multiple Images</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3" id="single-image-upload">
                                 <label for="image" class="form-label">Upload an Image</label>
                                 <input type="file" class="form-control" id="image" name="image" accept="image/png, image/jpeg, image/jpg" required>
                             </div>
+                            
+                            <div class="mb-3" id="multiple-image-upload" style="display: none;">
+                                <label for="images" class="form-label">Upload Multiple Images</label>
+                                <input type="file" class="form-control" id="images" name="images" accept="image/png, image/jpeg, image/jpg" multiple>
+                                <div id="image-preview-container" class="mt-2"></div>
+                            </div>
+                            
                             <div class="mb-3">
                                 <label for="request_text" class="form-label">Description Request</label>
                                 <textarea class="form-control" id="request_text" name="request_text" rows="4" placeholder="Enter specific details you want to include in the product description" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="openai_model" class="form-label">OpenAI Model</label>
+                                <select class="form-select" id="openai_model" name="openai_model">
+                                    <option value="gpt-4o" selected>GPT-4o - Multimodal model with image analysis</option>
+                                    <option value="gpt-4.1">GPT-4.1 - Advanced reasoning capabilities</option>
+                                    <option value="gpt-4.1-mini">GPT-4.1 Mini - Faster and more efficient</option>
+                                </select>
+                                <small class="form-text text-muted">Select the OpenAI model to analyze your image</small>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary" id="generate-btn">Generate Description</button>
@@ -55,7 +161,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4 mb-3" id="result-images">
                                 <img id="uploaded-image" src="" alt="Product Image" class="img-fluid rounded">
                             </div>
                             <div class="col-md-8">
@@ -84,6 +190,318 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle between single and multiple image upload modes
+            const uploadModeToggle = document.getElementById('upload-mode-toggle');
+            const singleImageUpload = document.getElementById('single-image-upload');
+            const multipleImageUpload = document.getElementById('multiple-image-upload');
+            const singleImageInput = document.getElementById('image');
+            const multipleImageInput = document.getElementById('images');
+            
+            uploadModeToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                if (this.classList.contains('active')) {
+                    // Multiple image mode
+                    singleImageUpload.style.display = 'none';
+                    multipleImageUpload.style.display = 'block';
+                    singleImageInput.removeAttribute('required');
+                    singleImageInput.value = '';
+                } else {
+                    // Single image mode
+                    singleImageUpload.style.display = 'block';
+                    multipleImageUpload.style.display = 'none';
+                    singleImageInput.setAttribute('required', 'required');
+                    singleImageInput.value = '';
+                    document.getElementById('image-preview-container').innerHTML = '';
+                }
+            });
+            
+            // Image preview for multiple images
+            multipleImageInput.addEventListener('change', function(e) {
+                const container = document.getElementById('image-preview-container');
+                container.innerHTML = '';
+                
+                if (this.files.length > 0) {
+                    for (let i = 0; i < this.files.length; i++) {
+                        const file = this.files[i];
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const previewDiv = document.createElement('div');
+                            previewDiv.className = 'image-preview';
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.alt = file.name;
+                            
+                            previewDiv.appendChild(img);
+                            container.appendChild(previewDiv);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+            
+            // Handle form submission
+            const form = document.getElementById('upload-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = new FormData();
+                const isMultipleMode = uploadModeToggle.classList.contains('active');
+                
+                // Add basic form fields
+                formData.append('request_text', document.getElementById('request_text').value);
+                formData.append('openai_model', document.getElementById('openai_model').value);
+                formData.append('multiple_mode', isMultipleMode ? 'true' : 'false');
+                
+                if (isMultipleMode) {
+                    // Multiple images mode
+                    const files = document.getElementById('images').files;
+                    if (files.length === 0) {
+                        showError('Please select at least one image');
+                        return;
+                    }
+                    
+                    // Add files to formData
+                    for (let i = 0; i < files.length; i++) {
+                        // Use a simple naming approach: all files have the same field name
+                        formData.append('images', files[i]);
+                    }
+                    
+                    console.log("Multiple mode - files count:", files.length);
+                } else {
+                    // Single image mode
+                    const file = document.getElementById('image').files[0];
+                    if (!file) {
+                        showError('Please select an image');
+                        return;
+                    }
+                    formData.append('image', file);
+                    console.log("Single mode - file selected:", file.name);
+                }
+                
+                // Log the form data for debugging
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+                }
+                
+                // Show loading spinner
+                document.getElementById('result-section').style.display = 'none';
+                document.getElementById('error-section').style.display = 'none';
+                document.getElementById('loading').style.display = 'block';
+                
+                // Send request
+                fetch('/generate', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    // Display results section
+                    document.getElementById('result-section').style.display = 'block';
+                    
+                    if (data.multiple_results) {
+                        // Multiple results mode - create accordion for each result
+                        handleMultipleResults(data.results);
+                    } else {
+                        // Single result mode
+                        handleSingleResult(data);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loading').style.display = 'none';
+                    showError('An error occurred while processing your request. Please try again.');
+                    console.error('Error:', error);
+                });
+            });
+            
+            function handleSingleResult(data) {
+                // Show image
+                const resultImagesContainer = document.getElementById('result-images');
+                resultImagesContainer.innerHTML = '';
+                
+                const img = document.createElement('img');
+                img.id = 'uploaded-image';
+                img.src = data.image_url;
+                img.alt = 'Product Image';
+                img.className = 'img-fluid rounded';
+                resultImagesContainer.appendChild(img);
+                
+                // Show description
+                document.getElementById('description-content').innerHTML = data.description_html;
+                
+                // Set up download button
+                const downloadBtn = document.getElementById('download-markdown-btn');
+                downloadBtn.onclick = function() {
+                    window.location = data.download_url;
+                };
+                
+                // Set up copy button
+                const copyBtn = document.getElementById('copy-markdown-btn');
+                copyBtn.onclick = function() {
+                    navigator.clipboard.writeText(data.description)
+                        .then(() => {
+                            const originalText = copyBtn.innerHTML;
+                            copyBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+                            setTimeout(() => {
+                                copyBtn.innerHTML = originalText;
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('Could not copy text: ', err);
+                        });
+                };
+            }
+            
+            function handleMultipleResults(results) {
+                // Create container for multiple results
+                const multiResultsContainer = document.createElement('div');
+                multiResultsContainer.className = 'accordion mt-3';
+                multiResultsContainer.id = 'resultsAccordion';
+                
+                // Clear existing content
+                const resultImagesContainer = document.getElementById('result-images');
+                resultImagesContainer.innerHTML = '';
+                const descriptionContent = document.getElementById('description-content');
+                descriptionContent.innerHTML = '';
+                
+                // Add multiple results accordion
+                descriptionContent.appendChild(multiResultsContainer);
+                
+                // Add each result as an accordion item
+                results.forEach((result, index) => {
+                    // Create accordion item
+                    const accordionItem = document.createElement('div');
+                    accordionItem.className = 'accordion-item mb-3';
+                    
+                    // Create header
+                    const headerId = `heading${index}`;
+                    const accordionHeader = document.createElement('h2');
+                    accordionHeader.className = 'accordion-header';
+                    accordionHeader.id = headerId;
+                    
+                    const button = document.createElement('button');
+                    button.className = 'accordion-button' + (index === 0 ? '' : ' collapsed');
+                    button.type = 'button';
+                    button.setAttribute('data-bs-toggle', 'collapse');
+                    button.setAttribute('data-bs-target', `#collapse${index}`);
+                    button.setAttribute('aria-expanded', index === 0 ? 'true' : 'false');
+                    button.setAttribute('aria-controls', `collapse${index}`);
+                    button.innerHTML = `<strong>${result.product_name}</strong>`;
+                    
+                    accordionHeader.appendChild(button);
+                    accordionItem.appendChild(accordionHeader);
+                    
+                    // Create body
+                    const collapseId = `collapse${index}`;
+                    const collapseDiv = document.createElement('div');
+                    collapseDiv.id = collapseId;
+                    collapseDiv.className = 'accordion-collapse collapse' + (index === 0 ? ' show' : '');
+                    collapseDiv.setAttribute('aria-labelledby', headerId);
+                    collapseDiv.setAttribute('data-bs-parent', '#resultsAccordion');
+                    
+                    const accordionBody = document.createElement('div');
+                    accordionBody.className = 'accordion-body';
+                    
+                    // Create row for image and content
+                    const row = document.createElement('div');
+                    row.className = 'row';
+                    
+                    // Image column
+                    const imageCol = document.createElement('div');
+                    imageCol.className = 'col-md-4 mb-3';
+                    
+                    const img = document.createElement('img');
+                    img.src = result.image_url;
+                    img.alt = `Product ${index + 1}`;
+                    img.className = 'img-fluid rounded';
+                    imageCol.appendChild(img);
+                    
+                    // Description column
+                    const descCol = document.createElement('div');
+                    descCol.className = 'col-md-8';
+                    descCol.innerHTML = result.description_html;
+                    
+                    // Action buttons
+                    const actionDiv = document.createElement('div');
+                    actionDiv.className = 'mt-3';
+                    
+                    // Copy button
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'btn btn-sm btn-outline-secondary me-2';
+                    copyBtn.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+                    copyBtn.onclick = function() {
+                        navigator.clipboard.writeText(result.description)
+                            .then(() => {
+                                const originalText = copyBtn.innerHTML;
+                                copyBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+                                setTimeout(() => {
+                                    copyBtn.innerHTML = originalText;
+                                }, 2000);
+                            });
+                    };
+                    actionDiv.appendChild(copyBtn);
+                    
+                    // Download button
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'btn btn-sm btn-outline-secondary';
+                    downloadBtn.innerHTML = '<i class="bi bi-download"></i> Download';
+                    downloadBtn.onclick = function() {
+                        window.location = result.download_url;
+                    };
+                    actionDiv.appendChild(downloadBtn);
+                    
+                    // View button
+                    const viewBtn = document.createElement('button');
+                    viewBtn.className = 'btn btn-sm btn-outline-primary ms-2';
+                    viewBtn.innerHTML = '<i class="bi bi-eye"></i> View';
+                    viewBtn.onclick = function() {
+                        window.open(result.view_markdown_url, '_blank');
+                    };
+                    actionDiv.appendChild(viewBtn);
+                    
+                    descCol.appendChild(actionDiv);
+                    
+                    // Add columns to row
+                    row.appendChild(imageCol);
+                    row.appendChild(descCol);
+                    
+                    // Add row to accordion body
+                    accordionBody.appendChild(row);
+                    collapseDiv.appendChild(accordionBody);
+                    accordionItem.appendChild(collapseDiv);
+                    
+                    // Add item to accordion
+                    multiResultsContainer.appendChild(accordionItem);
+                });
+                
+                // Hide the standard buttons
+                document.querySelector('.card-header .btn-outline-secondary').style.display = 'none';
+            }
+            
+            function showError(message) {
+                const errorSection = document.getElementById('error-section');
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = message;
+                errorSection.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html> 
