@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default('Product Description Generator - Documentation') }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+        }
+        
+        .markdown-body h1, .markdown-body h2 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }
+        
+        .markdown-body code {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            padding: 0.2em 0.4em;
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+        }
+        
+        .markdown-body pre {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            padding: 16px;
+            overflow: auto;
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+        }
+        
+        .markdown-raw {
+            background-color: #f6f8fa;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: auto;
+            white-space: pre-wrap;
+            color: #24292e;
+            border: 1px solid #e1e4e8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <h1 class="h3">{{ title|default('Documentation') }}</h1>
+            <div>
+                {% if raw_markdown %}
+                <div class="form-check form-switch d-inline-block me-3">
+                    <input class="form-check-input" type="checkbox" id="showMarkdownToggle">
+                    <label class="form-check-label" for="showMarkdownToggle">Show raw Markdown</label>
+                </div>
+                <a href="{{ url_for('main.download_markdown') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-download"></i> Download
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="markdown-body mt-3" id="markdown-content">
+            {{ content }}
+        </div>
+        
+        {% if raw_markdown %}
+        <div class="markdown-raw mt-3" id="raw-markdown" style="display: none;">
+            {{ raw_markdown }}
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4 mb-4">
+            <a href="/" class="btn btn-primary">Back to Application</a>
+        </div>
+    </div>
+    
+    {% if raw_markdown %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('showMarkdownToggle');
+            const htmlContent = document.getElementById('markdown-content');
+            const rawContent = document.getElementById('raw-markdown');
+            
+            toggle.addEventListener('change', function() {
+                if (this.checked) {
+                    htmlContent.style.display = 'none';
+                    rawContent.style.display = 'block';
+                } else {
+                    htmlContent.style.display = 'block';
+                    rawContent.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+</html> 

@@ -1,0 +1,41 @@
+# Product Description Generator Rules
+
+## Code Organization
+- All route definitions should be in app/routes.py
+- Business logic belongs in app/services/
+- Static assets (CSS, JS) go in app/static/
+- HTML templates stored in app/templates/
+- Uploaded images stored in app/static/uploads/
+
+## Naming Conventions
+- Use snake_case for Python variables, functions, and files
+- Use PascalCase for class names
+- CSS classes should use kebab-case
+- JavaScript variables and functions use camelCase
+
+## Code Formatting
+- Use 4 spaces for indentation (no tabs)
+- Maximum line length of 88 characters
+- Follow PEP 8 guidelines for Python code
+- Add docstrings to all functions and classes
+
+## API Integration
+- Store all API keys in the .env file (never commit to version control)
+- Use environment variables for configuration settings
+- Handle API errors gracefully with proper user feedback
+
+## Security
+- Sanitize all user inputs
+- Validate all file uploads (type, size, content)
+- Implement proper error handling
+- Use secure routes for sensitive operations
+
+## Performance
+- Optimize large image processing
+- Use caching where appropriate
+- Minimize JavaScript and CSS file sizes
+
+## Testing
+- Write unit tests for all service functions
+- Test API integrations with proper mocking
+- Validate UI components across devices 
